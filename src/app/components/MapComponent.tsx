@@ -4,39 +4,40 @@ import { useEffect } from "react";
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
-import OSM from "ol/source/OSM";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
-import { fromLonLat } from "ol/proj";
 import { Vector as VectorLayer } from "ol/layer";
-import { Vector as VectorSource } from "ol/source";
+import { OSM, Vector as VectorSource } from "ol/source";
 import { Icon, Style } from "ol/style";
 import Zoom from "ol/control/Zoom";
-
-import { Draw, Modify } from "ol/interaction";
-
+import DropdownMenu from "./DropDownMenu";
+import Draw from "ol/interaction/Draw.js";
 import { useState } from "react";
-import Toast from "./Toast";
+
+
 
 const MapComponent: React.FC = () => {
+  const [selectedOption, setSelectedOption] = useState<string>("UserArea");
+
   const centerLongitude: number = -11000000;
   const centerLatitude: number = 4600000;
 
-  useEffect(() => {
-    const vectorSource = new VectorSource();
-    const vectorLayer = new VectorLayer({
-      source: vectorSource,
-      style: new Style({}),
-    });
+  const vectorSource = new VectorSource({ wrapX: false });
+  const vectorLayer = new VectorLayer({
+    source: vectorSource,
+    style: new Style({}),
+  });
+  let map: any;
 
+  useEffect(() => {
     const raster = new TileLayer({
       source: new OSM({
         attributions: [],
       }),
     });
 
-    // Here, I am creating map instance
-    const map = new Map({
+    // This is map instance
+    map = new Map({
       target: "map",
       layers: [raster, vectorLayer],
       view: new View({
@@ -52,39 +53,65 @@ const MapComponent: React.FC = () => {
       ],
     });
 
-    map.on("click", function (event) {
-      const coords = event.coordinate;
-      const lonLat = fromLonLat(coords);
+    if (selectedOption === "UserArea") {
+      map.on("click", function (event: any) {
+        const coords = event.coordinate;
+        const iconFeature = new Feature({
+          geometry: new Point(coords),
+        });
 
-      const iconFeature = new Feature({
-        geometry: new Point(coords),
+        // Icon image
+        const iconStyle = new Style({
+          image: new Icon({
+            src: "https://mapmarker.io/api/v2/font-awesome/v5/pin?icon=fa-star-solid&size=50&color=FFF&background=BC5AF4&hoffset=0&voffset=0",
+          }),
+        });
+        iconFeature.setStyle(iconStyle);
+        vectorSource.clear();
+        vectorSource.addFeature(iconFeature);
       });
-
-      const iconStyle = new Style({
-        image: new Icon({
-          src: "https://mapmarker.io/api/v2/font-awesome/v5/pin?icon=fa-star-solid&size=50&color=FFF&background=BC5AF4&hoffset=0&voffset=0",
-        }),
-      });
-
-      iconFeature.setStyle(iconStyle);
-      vectorSource.clear();
-      vectorSource.addFeature(iconFeature);
-    });
+    } else {
+      addInteraction();
+    }
 
     return () => {
-      map.dispose();
+      map.dispose(); // for disposing the map
     };
-  }, []);
+  }, [selectedOption]);
+
+  function addInteraction(): void {
+    let draw = new Draw({
+      source: vectorSource,
+      type: selectedOption as any,
+    });
+    map.addInteraction(draw);
+  }
+
+  function handleOptionChange(option: string): void {
+    setSelectedOption(option);
+    console.log(option);
+  }
+
+ 
+
 
   return (
-    <div className="w-full">
-      <h2 className="mt-2 mb-5 text-center font-medium text-2xl">World Map</h2>
-
-      <div className="container mx-auto w-9/10 h-64 border border-gray-300 rounded-lg shadow-lg ">
-        <div id="map" className="w-full h-[500px]"></div>
+    <div className="w-full relative">
+      <div className="container mx-auto w-10/10 h-[500px] border border-gray-300 rounded-lg shadow-lg ">
+        <div id="map" className="w-full h-[550px]"></div>
 
         {/*Toast component*/}
+
       </div>
+
+      <div className="absolute top-0 right-12 mt-2 border-black-300 z-10">
+        <DropdownMenu
+          options={["UserArea", "Point", "LineString", "Polygon"]}
+          onSelectOption={handleOptionChange}
+        />
+      </div>
+
+      
     </div>
   );
 };
