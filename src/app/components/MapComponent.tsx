@@ -14,8 +14,6 @@ import DropdownMenu from "./DropDownMenu";
 import Draw from "ol/interaction/Draw.js";
 import { useState } from "react";
 
-
-
 const MapComponent: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<string>("UserArea");
 
@@ -27,15 +25,17 @@ const MapComponent: React.FC = () => {
     source: vectorSource,
     style: new Style({}),
   });
+
   let map: any;
 
-  useEffect(() => {
-    const raster = new TileLayer({
-      source: new OSM({
-        attributions: [],
-      }),
-    });
+  const raster = new TileLayer({
+    source: new OSM({
+      attributions: [],
+    }),
+  });
 
+
+  useEffect(() => {
     // This is map instance
     map = new Map({
       target: "map",
@@ -74,6 +74,9 @@ const MapComponent: React.FC = () => {
       addInteraction();
     }
 
+   
+
+
     return () => {
       map.dispose(); // for disposing the map
     };
@@ -92,16 +95,12 @@ const MapComponent: React.FC = () => {
     console.log(option);
   }
 
- 
-
-
   return (
     <div className="w-full relative">
-      <div className="container mx-auto w-10/10 h-[500px] border border-gray-300 rounded-lg shadow-lg ">
+      <div className="container mx-auto w-10/10 h-[500px] border border-gray-300 rounded-lg shadow-xlg ">
         <div id="map" className="w-full h-[550px]"></div>
 
         {/*Toast component*/}
-
       </div>
 
       <div className="absolute top-0 right-12 mt-2 border-black-300 z-10">
@@ -110,8 +109,6 @@ const MapComponent: React.FC = () => {
           onSelectOption={handleOptionChange}
         />
       </div>
-
-      
     </div>
   );
 };

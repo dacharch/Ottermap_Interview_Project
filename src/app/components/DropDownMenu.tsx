@@ -14,7 +14,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   };
 
   return (
-    <select className="p-3 " onChange={handleOptionChange}>
+    <select className="p-3" onChange={handleOptionChange}>
       {options.map((option, index) => (
         <option key={index} value={option}>
           {option}
